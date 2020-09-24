@@ -8,7 +8,7 @@ const admin = conecton.admin;
 
 const app = express();
 
-app.use(cors({ origin: true }));
+app.use(cors({origin: true}));
 
 app.post("/", async (req, res) => {
   const item = req.body;
@@ -27,37 +27,37 @@ app.post("/", async (req, res) => {
 });
 
 app.get("/", async (req, res) => {
-  const snapshot = await admin.firestore().collection("diningTime").get();
+    const snapshot = await admin.firestore().collection("diningTime").get();
 
-  let diningTimes = [];
-  snapshot.forEach((doc) => {
-    let id = doc.id;
-    let data = doc.data();
-    diningTimes.push({ id, ...data });
-  });
-  res.status(200).send(JSON.stringify(diningTimes));
+    let diningTimes = [];
+    snapshot.forEach((doc) => {
+        let id = doc.id;
+        let data = doc.data();
+        diningTimes.push({id, ...data});
+    });
+    res.status(200).send(JSON.stringify(diningTimes));
 });
 
 app.get("/:name", async (req, res) => {
-  const snapshot = await admin
-    .firestore()
-    .collection("diningTime")
-    .doc(req.params.name)
-    .get();
-  const menuId = snapshot.id;
-  const data = snapshot.data();
-  res.status(200).send(JSON.stringify({ id: menuId, ...data }));
+    const snapshot = await admin
+        .firestore()
+        .collection("diningTime")
+        .doc(req.params.name)
+        .get();
+    const menuId = snapshot.id;
+    const data = snapshot.data();
+    res.status(200).send(JSON.stringify({id: menuId, ...data}));
 });
 
 app.put("/:name", async (req, res) => {
-  const body = req.body;
-  await admin.firestore().collection("diningTime").doc(req.params.name).update(body);
-  res.status(200).send();
+    const body = req.body;
+    await admin.firestore().collection("diningTime").doc(req.params.name).update(body);
+    res.status(200).send();
 });
 
 app.delete("/:name", async (req, res) => {
-  await admin.firestore().collection("diningTime").doc(req.params.name).delete();
-  res.status(200).send();
+    await admin.firestore().collection("diningTime").doc(req.params.name).delete();
+    res.status(200).send();
 });
 
 exports.diningtime = functions.https.onRequest(app);
