@@ -1,3 +1,5 @@
+const _ = require("lodash")
+
 const functions = require("firebase-functions");
 
 const express = require("express");
@@ -34,16 +36,16 @@ app.get("/:id", async (req, res) => {
     if (exist) {
         await docRef.doc(req.params.id).get();
         res.status(200).send(JSON.stringify({id: snapshot.id, ...snapshot.data()}));
-    }
-    else {
+    } else {
         res.status(204).send();
     }
 
 });
 
 app.post("/", async (req, res) => {
-    const body = req.body;
+    const body = _.pick(req.body, ['code', 'name', 'internal']);
 
+    console.log(body);
     const docRef = admin.firestore().collection("customer-types");
 
     const exist = await docRef.doc(body.code).get().then((docSnapshot) => {
@@ -96,5 +98,14 @@ app.delete("/:id", async (req, res) => {
         res.status(204).send();
     }
 });
+
+
+let CustomerType = class {
+    constructor(code, name, internal) {
+        this.code = code;
+        this.name = name;
+        this.internal = internal !== undefined && internal !== null;
+    }
+}
 
 exports.customertype = functions.https.onRequest(app);
