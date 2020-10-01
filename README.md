@@ -14,8 +14,35 @@ https://www.restapitutorial.com/httpstatuscodes.html
 * 201 Created
 * 202 Accepted
 * 205 Reset Content
+* 204 No Content
 * 206 Partial Content
 * 400 Bad Request
 * 401 Unauthorized
 * 404 Not Found
+* 500 Internal Server Error
 
+##End points
+###Customer Type
+{
+    code: DIN;
+    name: Dining;
+    internal: true;
+}
+
+
+
+
+Sample Response
+{
+    status: {
+        code: Success;
+        no: 200 
+    }
+    message: {
+        short: ''
+        detail: '' 
+    }
+    data: {
+        
+    }
+}
