@@ -80,7 +80,7 @@ app.post("/", async (req, res) => {
 app.put("/:code", async (req, res) => {
     try {
         const params = req.params;
-        const body = createDAO(req);
+        const body = processRq(req);
         if (body instanceof Error) {
             res.status(400).send(createRes("Error", body.message, null));
             return;
@@ -92,10 +92,10 @@ app.put("/:code", async (req, res) => {
         });
 
         if (exist) {
-            await docRef.doc(params.id).update(body);
-            res.status(400).send(createRes("Success", "Success fully updated" + "#" + params.code + " Dining Time updated successfully", null));
+            await docRef.doc(params.code).update(body);
+            res.status(200).send(createRes("Success", "Success fully updated" + "#" + params.code + " Dining Time updated successfully", null));
         } else {
-            res.status(200).send(createRes("Error", "Error while update Dining Time#Dining Time + " + params.code + " not found", null));
+            res.status(400).send(createRes("Error", "Error while update Dining Time#Dining Time + " + params.code + " not found", null));
         }
     } catch (e) {
         console.log("Error while performing Update Dining Time request, Error: ", e);
