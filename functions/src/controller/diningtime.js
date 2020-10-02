@@ -44,7 +44,7 @@ app.get("/:code", async (req, res) => {
             const data = {id: docSnapshot.id, ...docSnapshot.data()};
             res.status(200).send(createRes("Success", null, data));
         } else {
-            res.status(204).send(createRes("Error", "Content Not Found#Dining Type " + params.code + " not found", null));
+            res.status(404).send(createRes("Error", "Content Not Found#Dining Type " + params.code + " not found", null));
         }
     } catch (e) {
         console.log("Error while performing GET Dining Time by code request, Error: ", e);
@@ -69,7 +69,7 @@ app.post("/", async (req, res) => {
             res.status(400).send(createRes("Error", "Error while create Dining Time#Dining Time " + body.code + " already exist", null));
         } else {
             await docRef.doc(body.code).set(body);
-            res.status(201).send(createRes("Success", "Success fully created" + "#" + body.code + " Customer Type created successfully", null));
+            res.status(201).send(createRes("Success", "Success fully created" + "#" + body.code + " Dining Time created successfully", null));
         }
     } catch (e) {
         console.log("Error while performing Create Dining Time request, Error: ", e);
@@ -93,9 +93,9 @@ app.put("/:code", async (req, res) => {
 
         if (exist) {
             await docRef.doc(params.id).update(body);
-            res.status(204).send(createRes("Success", "Success fully updated" + "#" + params.code + " Dining Time updated successfully", null));
+            res.status(400).send(createRes("Success", "Success fully updated" + "#" + params.code + " Dining Time updated successfully", null));
         } else {
-            res.status(205).send(createRes("Error", "Error while update Dining Time#Dining Time + " + params.code + " not found", null));
+            res.status(200).send(createRes("Error", "Error while update Dining Time#Dining Time + " + params.code + " not found", null));
         }
     } catch (e) {
         console.log("Error while performing Update Dining Time request, Error: ", e);
@@ -114,11 +114,10 @@ app.delete("/:code", async (req, res) => {
 
         if (exist) {
             await docRef.doc(params.code).delete();
-            res.status(204).send(createRes("Success", "Success fully deleted" + "#" + params.code + " Dining Time deleted successfully", null));
+            res.status(200).send(createRes("Success", "Success fully deleted" + "#" + params.code + " Dining Time deleted successfully", null));
         } else {
-            res.status(202).send(createRes("Error", "Error while delete Dining Time#Dining Time + " + params.code + " not found"));
+            res.status(400).send(createRes("Error", "Error while delete Dining Time#Dining Time + " + params.code + " not found", null));
         }
-        res.status(200).send();
     } catch (e) {
         console.log("Error while performing Update Dining Time request, Error: ", e);
         res.status(500).send(createRes("Error", "Update Dining Time Error#" + e.message));
