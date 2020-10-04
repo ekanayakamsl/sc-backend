@@ -13,15 +13,20 @@ const app = express();
 app.use(cors({origin: true}));
 
 app.get("/", async (req, res) => {
-    const snapshot = await admin.firestore().collection("customerTypes").get();
+    try {
+        const snapshot = await admin.firestore().collection("customerTypes").get();
 
-    let customerTypes = [];
-    snapshot.forEach((doc) => {
-        let id = doc.id;
-        let data = doc.data();
-        customerTypes.push({id, ...data});
-    });
-    res.status(200).send(createRes("Success", null, customerTypes));
+        let customerTypes = [];
+        snapshot.forEach((doc) => {
+            let id = doc.id;
+            let data = doc.data();
+            customerTypes.push({id, ...data});
+        });
+        res.status(200).send(createRes("Success", null, customerTypes));
+    } catch (e) {
+        console.log("Error while performing GET all Customer Types request, Error: ", e);
+        res.status(500).send(createRes("Error", "Get All Customer Types Error#" + e.message));
+    }
 });
 
 app.get("/:code", async (req, res) => {
@@ -29,8 +34,7 @@ app.get("/:code", async (req, res) => {
         const params = req.params;
 
         const docRef = admin.firestore().collection("customerTypes");
-
-        const docSnapshot = await docRef.doc(req.params.id).get().then((docSnapshot) => {
+        const docSnapshot = await docRef.doc(params.code).get().then((docSnapshot) => {
             return docSnapshot;
         });
 
@@ -38,39 +42,45 @@ app.get("/:code", async (req, res) => {
             const data = JSON.stringify({id: docSnapshot.id, ...docSnapshot.data()});
             res.status(200).send(createRes("Success", null, data));
         } else {
-            res.status(204).send(createRes("Error", "Content Not Found#Customer Type " + params.id + " not found", null));
+            res.status(404).send(createRes("Error", "Content Not Found#Customer Type " + params.id + " not found", null));
         }
     } catch (e) {
         console.log("Error while performing GET Customer Type by code request, Error: ", e);
-        res.status(500).send(createRes("Error", "Get Dining Time Error#" + e.message));
+        res.status(500).send(createRes("Error", "Get Customer Type Error#" + e.message));
     }
 });
 
 app.post("/", async (req, res) => {
-    const body = createDAO(req);
+    try {
+        const body = processRq(req);
 
-    if (body instanceof Error) {
-        res.status(400).send(createRes("Error", body.message, null));
-        return;
+        if (body instanceof Error) {
+            res.status(400).send(createRes("Error", body.message, null));
+            return;
+        }
+
+        const docRef = admin.firestore().collection("customerTypes");
+
+        const exist = await docRef.doc(body.code).get().then((docSnapshot) => {
+            return docSnapshot.exists;
+        });
+
+        if (exist) {
+            res.status(400).send(createRes("Error", "Error while create#Error While Create Customer Type"));
+        } else {
+            await docRef.doc(body.code).set(body);
+            res.status(201).send(createRes("Success", "Success fully created" + "#" + body.code + " Customer Type created successfully", null));
+        }
     }
-
-    const docRef = admin.firestore().collection("customerTypes");
-
-    const exist = await docRef.doc(body.code).get().then((docSnapshot) => {
-        return docSnapshot.exists;
-    });
-
-    if (exist) {
-        res.status(400).send(createRes("Error", "Error while create#Error While Create Customer Type"));
-    } else {
-        await docRef.doc(body.code).set(body);
-        res.status(201).send(createRes("Success", "Success fully created" + "#" + body.code + " Customer Type created successfully", null));
+    catch (e) {
+        console.log("Error while performing Create Customer Type request, Error: ", e);
+        res.status(500).send(createRes("Error", "Create Customer Type Error#" + e.message));
     }
 });
 
-app.put("/:id", async (req, res) => {
+app.put("/:code", async (req, res) => {
     try {
-        const body = createDAO(req);
+        const body = processRq(req);
 
         if (body instanceof Error) {
             res.status(400).send(createRes("Error", body.message, null));
@@ -81,35 +91,35 @@ app.put("/:id", async (req, res) => {
 
         const docRef = admin.firestore().collection("customerTypes");
 
-        const exist = await docRef.doc(req.params.id).get().then((docSnapshot) => {
+        const exist = await docRef.doc(params.code).get().then((docSnapshot) => {
             return docSnapshot.exists;
         });
 
         if (exist) {
-            await docRef.doc(params.id).update(body);
-            res.status(205).send(createRes("Error", "Error while update#Error While Update Customer Type"));
+            await docRef.doc(params.code).update(body);
+            res.status(200).send(createRes("Error", "Error while update#Error While Update Customer Type"));
         } else {
-            res.status(204).send(createRes("Success", "Success fully updated" + "#" + body.code + " Customer Type updated successfully", null));
+            res.status(400).send(createRes("Success", "Success fully updated" + "#" + body.code + " Customer Type updated successfully", null));
         }
     } catch (e) {
-        console.log(e);
+        console.log("Error while performing Update Customer Type request, Error: ", e);
+        res.status(500).send(createRes("Error", "Update Customer Type Error#" + e.message));
     }
 });
 
-app.delete("/:id", async (req, res) => {
+app.delete("/:code", async (req, res) => {
     const params = req.params;
 
     const docRef = admin.firestore().collection("customerTypes");
-
-    const exist = await docRef.doc(req.params.id).get().then((docSnapshot) => {
+    const exist = await docRef.doc(req.params.code).get().then((docSnapshot) => {
         return docSnapshot.exists;
     });
 
     if (exist) {
         await docRef.doc(params.id).delete();
-        res.status(202).send();
+        res.status(200).send(createRes("Success", "Success fully deleted" + "#" + params.code + " Customer Type deleted successfully", null));
     } else {
-        res.status(204).send();
+        res.status(400).send(createRes("Error", "Error while delete Customer Type#Customer Type + " + params.code + " not found", null));
     }
 });
 
@@ -118,9 +128,9 @@ function createRes(statusCode, message, data) {
     return JSON.stringify({status: {code: statusCode}, message: {short: msg[0], detail: msg[1]}, data: data});
 }
 
-function createDAO(req) {
+function processRq(req) {
 
-    let body = _.pick(req.body, ['code', 'name', 'internal']);
+    let body = _.pick(req.body, ['code', 'name', 'description', 'isInternal']);
 
     if (body.code === undefined || body.code === null) {
         return new Error("Validation Error#Code Not Found");
@@ -129,8 +139,8 @@ function createDAO(req) {
     if (body.name === undefined || body.name === null) {
         return new Error("Validation Error#Name Not Found");
     }
-    if (body.internal === undefined || body.internal === null) {
-        body.internal = false;
+    if (body.isInternal === undefined || body.isInternal === null) {
+        body.isInternal = false;
     }
 
     return body;

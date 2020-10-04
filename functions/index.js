@@ -6,4 +6,4 @@ const customerType = require("./src/controller/customertype");
 exports.user = user.user;
 exports.menu = menu.menu;
 exports.diningtime = diningtime.diningtime;
-exports.customerType = customerType.customertype;
+exports.customertype = customerType.customertype;
