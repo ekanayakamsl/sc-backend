@@ -15,26 +15,26 @@ app.use(cors({origin: true}));
 //Get All Menu Items
 app.get("/", async (req, res) => {
     try {
-        const snapshot = await admin.firestore().collection("itemType").get();
+        const snapshot = await admin.firestore().collection("menuCategory").get();
 
-        let menuItems = [];
+        let menuCategories = [];
         snapshot.forEach((doc) => {
             let id = doc.id;
             let data = doc.data();
-            menuItems.push({id, ...data});
+            menuCategories.push({id, ...data});
         });
 
-        res.status(200).send(createRes("Success", null, menuItems));
+        res.status(200).send(createRes("Success", null, menuCategories));
     } catch (e) {
-        console.log("Error while performing GET all Item Type request, Error: ", e);
-        res.status(500).send(createRes("Error", "Get All Item Type Error#" + e.message));
+        console.log("Error while performing GET all Menu Category request, Error: ", e);
+        res.status(500).send(createRes("Error", "Get All Menu Category Error#" + e.message));
     }
 });
 
 app.get("/:code", async (req, res) => {
     try {
         const params = req.params;
-        const docRef = admin.firestore().collection("itemType");
+        const docRef = admin.firestore().collection("menuCategory");
 
         const docSnapshot = await docRef.doc(params.code).get().then((docSnapshot) => {
             return docSnapshot;
@@ -44,11 +44,11 @@ app.get("/:code", async (req, res) => {
             const data = {id: docSnapshot.id, ...docSnapshot.data()};
             res.status(200).send(createRes("Success", null, data));
         } else {
-            res.status(404).send(createRes("Error", "Content Not Found#Item Type " + params.code + " not found", null));
+            res.status(404).send(createRes("Error", "Content Not Found#Menu Category " + params.code + " not found", null));
         }
     } catch (e) {
-        console.log("Error while performing GET Item Type by code request, Error: ", e);
-        res.status(500).send(createRes("Error", "Get Item Type Error#" + e.message));
+        console.log("Error while performing GET Menu Category by code request, Error: ", e);
+        res.status(500).send(createRes("Error", "Get Menu Category Error#" + e.message));
     }
 });
 
@@ -60,20 +60,20 @@ app.post("/", async (req, res) => {
             return;
         }
 
-        const docRef = admin.firestore().collection("itemType");
+        const docRef = admin.firestore().collection("menuCategory");
         const exist = await docRef.doc(body.code).get().then((docSnapshot) => {
             return docSnapshot.exists;
         });
 
         if (exist) {
-            res.status(400).send(createRes("Error", "Error while create Item Type#Item Type " + body.code + " already exist", null));
+            res.status(400).send(createRes("Error", "Error while create Menu Category#Menu Category " + body.code + " already exist", null));
         } else {
             await docRef.doc(body.code).set(body);
-            res.status(201).send(createRes("Success", "Success fully created" + "#" + body.code + " Item Type created successfully", null));
+            res.status(201).send(createRes("Success", "Success fully created" + "#" + body.code + " Menu Category created successfully", null));
         }
     } catch (e) {
-        console.log("Error while performing Create Item Type request, Error: ", e);
-        res.status(500).send(createRes("Error", "Create Item Type Error#" + e.message));
+        console.log("Error while performing Create Menu Category request, Error: ", e);
+        res.status(500).send(createRes("Error", "Create Menu Category Error#" + e.message));
     }
 });
 
@@ -86,20 +86,20 @@ app.put("/:code", async (req, res) => {
             return;
         }
 
-        const docRef = admin.firestore().collection("itemType");
+        const docRef = admin.firestore().collection("menuCategory");
         const exist = await docRef.doc(params.code).get().then((docSnapshot) => {
             return docSnapshot.exists;
         });
 
         if (exist) {
             await docRef.doc(params.code).update(body);
-            res.status(200).send(createRes("Success", "Success fully updated" + "#" + params.code + " Item Type updated successfully", null));
+            res.status(200).send(createRes("Success", "Success fully updated" + "#" + params.code + " Menu Category updated successfully", null));
         } else {
-            res.status(400).send(createRes("Error", "Error while update Item Type#Item Type + " + params.code + " not found", null));
+            res.status(400).send(createRes("Error", "Error while update Menu Category#Menu Category + " + params.code + " not found", null));
         }
     } catch (e) {
-        console.log("Error while performing Update Item Type request, Error: ", e);
-        res.status(500).send(createRes("Error", "Update Item Type Error#" + e.message));
+        console.log("Error while performing Update Menu Category request, Error: ", e);
+        res.status(500).send(createRes("Error", "Update Menu Category Error#" + e.message));
     }
 });
 
@@ -107,20 +107,20 @@ app.delete("/:code", async (req, res) => {
     try {
         const params = req.params;
 
-        const docRef = admin.firestore().collection("itemType");
+        const docRef = admin.firestore().collection("menuCategory");
         const exist = await docRef.doc(params.code).get().then((docSnapshot) => {
             return docSnapshot.exists;
         });
 
         if (exist) {
             await docRef.doc(params.code).delete();
-            res.status(200).send(createRes("Success", "Success fully deleted" + "#" + params.code + " Item Type deleted successfully", null));
+            res.status(200).send(createRes("Success", "Success fully deleted" + "#" + params.code + " Menu Category deleted successfully", null));
         } else {
-            res.status(400).send(createRes("Error", "Error while delete Item Type#Item Type + " + params.code + " not found", null));
+            res.status(400).send(createRes("Error", "Error while delete Menu Category#Menu Category + " + params.code + " not found", null));
         }
     } catch (e) {
-        console.log("Error while performing Update Item Type request, Error: ", e);
-        res.status(500).send(createRes("Error", "Update Item Type Error#" + e.message));
+        console.log("Error while performing Update Menu Category request, Error: ", e);
+        res.status(500).send(createRes("Error", "Update Menu Category Error#" + e.message));
     }
 });
 
@@ -159,4 +159,4 @@ function processRq(req) {
 }
 
 
-exports.itemType = functions.https.onRequest(app);
+exports.menuCategory = functions.https.onRequest(app);
